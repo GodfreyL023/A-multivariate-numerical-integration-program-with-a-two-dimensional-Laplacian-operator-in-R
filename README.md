@@ -7,4 +7,4 @@ During researching in the present paper, I noticed that the profile of deSolve p
 
 I expanded the usage of Laplacian operator to multivariate cases by manipulating arrays in R in these codes, and with them one can easily change the specific form of multivariate systems and inquire how the systems perform beautifully in a two-dimensional space.
 
-It is also notable that this reprository is used to store the codes and data of our recent article in submission. Relatively large parts of the codes and the annotation might seems rediculous to skilled programmers since the author is an entry-level programmer. I would greatly appreciate any correction and potential suggestions.
+It is also notable that this reprository is used to store the codes and data of our recent article in submission. Relatively large parts of the codes and the annotation might seems rediculous to skilled programmers since the author is an entry-level programmer. I would greatly appreciate any correction and potential suggestions. You can also feel free to ask me any questions when using the codes by leaving me message or email me at luogeyang22@ioz.ac.cn
