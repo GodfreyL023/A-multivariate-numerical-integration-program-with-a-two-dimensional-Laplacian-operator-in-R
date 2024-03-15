@@ -76,6 +76,11 @@ dy <- 1/N
 ### Set how much simulations under each group of parameters 
 repeat_required <- 50
 
+### Here may be the most inconvinient part of using this code, users need to set the parameters themselves according to the specific model themselves.
+### In the example presented in this file, we have three parameter gradients to traverse, which are the parameter for the distribution of two interaction
+### matrices and the diffusion rate, respectively. And each combination of different values of the three parameters needs 50 repeating simulations. Therefore,
+### the loop below looks extremely complex. Users need to adjust the loop depend on the parameter gradients they need in their own models
+
 par_df <- expand.grid(seq(0.25,2,by = 0.25),seq(0.25,2,by = 0.25))
 
 for (iii in 1:length(target_terms)) {
