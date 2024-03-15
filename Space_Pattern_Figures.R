@@ -113,86 +113,32 @@ for (i in 1:length(target_terms2)) {
 Exist_Linechart <- grid.arrange(myLineChart2 + ggtitle("a")+theme(plot.title = element_text(size = 16)),
                                 myLineChart5 + ggtitle("b")+theme(plot.title = element_text(size = 16)),
                                 nrow = 1)
-# Exist_parspan <- grid.arrange(myParSpan2 + ggtitle("a")+theme(plot.title = element_text(size = 16)),
-#                               myParSpan5 + ggtitle("b")+theme(plot.title = element_text(size = 16)),
-#                               nrow = 1)
+
 ggsave(filename = paste0("./graphs/N=",number_of_polulation,"_Exist_lineChart.pdf"),
        plot = Exist_Linechart,
        width = 11,
        height = 5,
        dpi = 1000)
-# ggsave(filename = paste0("./graphs/5.0graphs/N=",number_of_polulation,"_Exist_parSpan.png"),
-#        plot = Exist_parspan,
-#        width = 11,
-#        height = 5,
-#        dpi = 1000)
-# 
+
 Biomass_Linechart <- grid.arrange(myLineChart1 + ggtitle("a")+theme(plot.title = element_text(size = 16)),
                                   myLineChart4 + ggtitle("b")+theme(plot.title = element_text(size = 16)),
                                   nrow = 1)
-# Biomass_parspan <- grid.arrange(myParSpan1 + ggtitle("a")+theme(plot.title = element_text(size = 16)),
-#                                 myParSpan4 + ggtitle("b")+theme(plot.title = element_text(size = 16)),
-#                                 nrow = 1)
+
 ggsave(filename = paste0("./graphs/N=",number_of_polulation,"_Biomass_lineChart.pdf"),
        plot = Biomass_Linechart,
        width = 11,
        height = 5,
        dpi = 1000)
-# ggsave(filename = paste0("./graphs/5.0graphs/N=",number_of_polulation,"_Biomass_parSpan.png"),
-#        plot = Biomass_parspan,
-#        width = 11,
-#        height = 5,
-#        dpi = 1000)
-# 
+
 Osci_Linechart <- grid.arrange(myLineChart3 + ggtitle("a")+theme(plot.title = element_text(size = 16)),
                                myLineChart6 + ggtitle("b")+theme(plot.title = element_text(size = 16)),
                                nrow = 1)
-# Osci_parspan <- grid.arrange(myParSpan3 + ggtitle("a")+theme(plot.title = element_text(size = 16)),
-#                              myParSpan6 + ggtitle("b")+theme(plot.title = element_text(size = 16)),
-#                              nrow = 1)
+
 ggsave(filename = paste0("./graphs/N=",number_of_polulation,"_Osci_lineChart.pdf"),
        plot = Osci_Linechart,
        width = 11,
        height = 5)
-# ggsave(filename = paste0("./graphs/5.0graphs/N=",number_of_polulation,"_Osci_parSpan.png"),
-#        plot = Osci_parspan,
-#        width = 11,
-#        height = 5,
-#        dpi = 1000)
-# 
-# Existence_fig <- grid.arrange(myLineChart2 + ggtitle("a")+theme(plot.title = element_text(size = 16)),
-#                               myLineChart5 + ggtitle("c")+theme(plot.title = element_text(size = 16)),
-#                               myParSpan2 + ggtitle("b")+theme(plot.title = element_text(size = 16)),
-#                               myParSpan5 + ggtitle("d")+theme(plot.title = element_text(size = 16)),
-#                               nrow = 2)
-# 
-# ggsave(filename = paste0("./graphs/5.0graphs/N=",number_of_polulation,"_Existence.png"),
-#        plot = Existence_fig,
-#        width = 11,
-#        height = 10,
-#        dpi = 1000)
-# 
-# Biomass_fig <- grid.arrange(myLineChart1 + ggtitle("a")+theme(plot.title = element_text(size = 16)),
-#                             myLineChart4 + ggtitle("c")+theme(plot.title = element_text(size = 16)),
-#                             myParSpan1 + ggtitle("b")+theme(plot.title = element_text(size = 16)),
-#                             myParSpan4 + ggtitle("d")+theme(plot.title = element_text(size = 16)),
-#                             nrow = 2)
-# 
-# ggsave(filename = paste0("./graphs/5.0graphs/N=",number_of_polulation,"_Biomass.png"),
-#        plot = Biomass_fig,
-#        width = 11,
-#        height = 10,
-#        dpi = 1000)
-# 
-# Fluc_fig <- grid.arrange(myLineChart3 + ggtitle("a")+theme(plot.title = element_text(size = 16)),
-#                          myLineChart6 + ggtitle("c")+theme(plot.title = element_text(size = 16)),
-#                          myParSpan3 + ggtitle("b")+theme(plot.title = element_text(size = 16)),
-#                          myParSpan6 + ggtitle("d")+theme(plot.title = element_text(size = 16)),
-#                          nrow = 2)
-# 
-# ggsave(filename = paste0("./graphs/5.0graphs/N=",number_of_polulation,"_Fluc.png"),
-#        plot = Fluc_fig,
-#        width = 11,
-#        height = 10,
-#        dpi = 1000)
+
+
+
 
