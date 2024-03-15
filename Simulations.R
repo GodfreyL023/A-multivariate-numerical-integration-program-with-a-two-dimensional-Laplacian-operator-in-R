@@ -67,10 +67,13 @@ nn = number_of_polulation^2
 iterations = 100
 times <- seq(0, iterations, 1)
 last_iterations = (0.75*iterations+1):iterations
+
+### Set the dimension of the space
 N <- 30
 dx <- 1/N
 dy <- 1/N
 
+### Set how much simulations under each group of parameters 
 repeat_required <- 50
 
 par_df <- expand.grid(seq(0.25,2,by = 0.25),seq(0.25,2,by = 0.25))
