@@ -1,6 +1,12 @@
+### Use this program to manipulate massive simulations and drag out the general features of your model.
+
+### Since R is born not good at intense computation, I highly recommend run this program in Intel MKL environment or after applying any other 
+### multi-core arithmetic acceleration method. And even though the programme will be really time-consuming because the system is too complex, i.e., 
+### too many dimensions. Therefore substantial preliminary experiments and stable computing equipments are necessary.
+
 rm(list=ls())
 
-setwd("F:/AcademyData/Computer/rcode/ecology_model/GNM3_laplasian/pattern4")
+setwd("Set your own work direction")
 library(deSolve)
 library(ggplot2)
 library(gridExtra)
@@ -9,8 +15,9 @@ library(tidyr)
 library(xlsx)
 library(openxlsx)
 library(progress)
-options(scipen = 100)
+options(scipen = 100) ### Make R do not use scientific notation to read and write files correctly.
 
+### The model is the same as "Laplacian.R", please check the file before using this program.
 GNMmod2D <- function(time, state, parms, N, Da, dx, dy) { 
   n <- array(state, dim = c(length(state)/(N^2), N, N))
   n[n < 0] <- 0
@@ -37,6 +44,8 @@ GNMmod2D <- function(time, state, parms, N, Da, dx, dy) {
   })
 }
 
+### Here we define the function to calculate the diversity or the survival rate of each space
+### You can easily define your own function to detect the features you are interested in since the output data is still in the form of n*N*N array.
 Existence_rate_func <- function(x){
   Ex <- apply(x, 1, function(n){
     if(any(n<0.001)){
@@ -48,19 +57,8 @@ Existence_rate_func <- function(x){
   return(sum(Ex)/length(Ex))
 }
 
-# SW <- function(x){
-#   x[x<=0]=10^-10
-#   y = -sum(x*log(x))
-#   y = round(y,4)
-#   return(y)
-# }
-# 
-# gini <- function(x) {
-#   G <- 2 * sum((1:length(x)) * sort(x)) / length(x) - 1 - 1 / length(x)
-#   return(G)
-# }
 
-mr_gradient <- c(10^(-4))#
+mr_gradient <- c(10^(-4)) ###
 target_terms <- c("Biomass","Existence","Osci","Biomass_var",
                   "Existence_var","Osci_var","Aij", "Bij","r","N_ini")#, "raw_data"
 number_of_polulation = 8
@@ -162,15 +160,6 @@ for (j in 1:length(mr_gradient)) {
         osci <- apply(my_community[, last_iterations], 1, function(x){mean(abs(x-sum(x)/length(x)))})
         Osci <<- c(Osci, sum(osci)/length(osci))
         Osci_var <<- c(Osci_var,sd(osci))
-        
-        
-        # #Gini Index
-        # xC <- apply(mydata[,,],c(2,3),sum) 
-        # xxC <- apply(xC,2,sort)
-        # xxxC <- apply(xxC, 2, prop.table)
-        # gini_Community <- apply(xxxC, 2, gini)
-        # gini_Community_Mean <- mean(gini_Community[last_iterations])
-        # Gini_index <<- c(Gini_index, gini_Community_Mean)
         
         #Parameters archiving
         adf <- data.frame()
