@@ -14,16 +14,21 @@ library(openxlsx)
 library(ape)
 library(paletteer)
 
-GNMmod2D <- function(time, state, parms, N, Da, dx, dy) { 
+Your_Model_2D <- function(time, state, parms, N, Da, dx, dy) { 
   n <- array(state, dim = c(length(state)/(N^2), N, N))
-  #n[n < 0] <- 0
-  # n <- array(data, dim = c(num, x, y))
+  ### For a system with n variables dispersing in a N*N space, the initial input should be a vector transfered from n*N*N array.
+  ### Then the vector as the initial value is transfered back to the array.
   with( as.list(parms), { 
 
+    ### Design your own model instead of the next 3 rows
     positive_interaction <- apply(n, c(2,3), function(x){bij %*% x})
     netative_interaction <- apply(n, c(2,3), function(x){-aij %*% (x^2)})
     dn <- r*n*(1 - n + positive_interaction + netative_interaction)
-    
+    ### Here I exhibit a system in accordance with our article, which is a variation of the well-known Lotka-Volterra model.
+    ### Because the partial derivative of the afectted variable against exerting variables change from positive to negative as exerting variables increase, we call 
+    ### this model as Generalized Non-monotonous(GNM) Interaction Model.
+
+    ### The laplacian operator is performed as follow
     zero <- numeric(N)
     Flux_x <- abind(matrix(rep(zero,dim(n)[1]), nrow = dim(n)[1], byrow = TRUE), 
                     (-Da * (n[,-1,] - n[,-N,]) / dx), 
@@ -40,21 +45,22 @@ GNMmod2D <- function(time, state, parms, N, Da, dx, dy) {
   })
 }
 
-GNMmod <- function(Time, n, Pars) {
-  with( as.list(Pars), { 
-    
-    dn <- r*n*(1 - n + bij%*%n - aij%*%(n^2))
-    
-    return(list(dn))
-  })
-}
-
-mr_gradient <- c(0, 10^(-7:-6), 3e-6, 5e-6, 7e-6,
-                 3e-5, 5e-5, 7e-5 ,1e-4, 3e-4, 5e-4, 7e-4, 1e-3, 1e-2)
-number_of_polulation = 6
+mr_gradient <- c(0, 10^(-7:-1)) ### Here set the diffusion rate gradient you need
+number_of_polulation = 6 ### Here set the dimension of the variable or number of the variables you need
 nn = number_of_polulation^2
+
+### Here set the number of iterations and integration step_length
+iterations = 100 
+step_length = 0.01
+times <- seq(0, iterations, step_length)
+
+### Here set the spatial resolution you need
+N <- 50
+dx <- 1/N
+dy <- 1/N
+
+### Desigh all the other parameters you need to input to the model
 U <- c(2,2)
-iterations = 100
 aij <- round(matrix(rgamma(nn, 1, scale = U[1]), nrow = number_of_polulation, 
                     ncol = number_of_polulation),4)#
 diag(aij)=0
@@ -62,32 +68,29 @@ bij <- round(matrix(rgamma(nn, 1, scale = U[2]), nrow = number_of_polulation,
                     ncol = number_of_polulation),4)#
 diag(bij)=0
 r <- round(runif(number_of_polulation,0.5,1),4)
-N <- 50
-dx <- 1/N
-dy <- 1/N
-times <- seq(0, iterations, 1)
 pars <- c(aij = aij, bij = bij, r = r)
-# NN_ini <- array(0, dim = c(number_of_polulation, N, N))
-# NN_ini[,(1+N)/2,(1+N)/2] <- runif(number_of_polulation)
-# N_ini <- as.vector(NN_ini)
+
+### Here design your initial values that will be input. 
+### Notice that the initial values should be stored in a number_of_polulation*N*N vector
 N_ini <- runif(number_of_polulation*N*N, 0, 1)
 n <- N_ini
-testout <- ode(runif(number_of_polulation, 0, 0.5), times, GNMmod, pars)
-matplot(x = times, y = testout[,2:ncol(testout)],type = "l")
 
-taken_time <- 0
+### Traverse the diffusion rate gradient in the loop below.
+### The parameters set above can also be set inside the loop, then each loop won't share the same group of parameters. 
+
+taken_time <- 0 ### timer
 for (i in 1:length(mr_gradient)) {
   start_time <- Sys.time()
   Da <- mr_gradient[i]
   out <- ode.2D(y = N_ini, times = times, func = GNMmod2D, parms = pars, 
-                dimens = c(N, N), N = N, dx = dx, dy = dy, Da = Da, ynames = FALSE, hini = 0.01, method = "ode45")#,lrw = 1e6
+                dimens = c(N, N), N = N, dx = dx, dy = dy, Da = Da, ynames = FALSE, hini = 0.01, method = "ode45")
+  ### Change and adjust the integrator according the deSolve profile, such as change the method to "ode23","lsoda". 
 
-  
+  ### Transfer the final output of the integrator to the array in accordance with the initial designation
   premydata <- array(as.vector(out[,2:ncol(out)]), dim = c(iterations+1, number_of_polulation,N^2))
   mydata <- aperm(premydata,c(2,3,1))
-  # matplot(premydata[,6,],type = "l")
-  # matplot(t(mydata[6,,]),type = "l")
-  
+
+  ### Figures exhibit the dynamics and the final spatial pattern
   mydata1 <- round(apply(mydata,2:3,sum),4)
   data <- gather(data.frame(t(mydata1[,1:(iterations+1)])),key = "grid",value = "abundance")
   data$times <- rep(1:(iterations+1),N^2)
@@ -137,7 +140,7 @@ for (i in 1:length(mr_gradient)) {
                "mr=",Da,"Population.png",sep ="_"),
          p6,dpi=1000,width = 4,height = 6.4)
   
-  #Gini index
+  #Gini index that shows the evenness of the final spatial pattern
   gini <- function(x) {
     G <- 2 * sum((1:length(x)) * sort(x)) / length(x) - 1 - 1 / length(x)
     G[G<0]=0
@@ -186,7 +189,7 @@ for (i in 1:length(mr_gradient)) {
   data1 <- gather(mydata3[1:(iterations+1),],key = "Level",value="Value")
   data1$Time <- 1:(iterations+1)
   
-  #Moran's I
+  #Moran's I shows the spatial autocorrelation of the space
   o <- seq(1,N^2,by=1)
   w_matrix <- matrix(0,nrow = N^2, ncol = N^2)
   
