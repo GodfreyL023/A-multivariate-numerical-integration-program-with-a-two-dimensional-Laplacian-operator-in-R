@@ -79,10 +79,13 @@ repeat_required <- 50
 ### Here may be the most inconvinient part of using this code, users need to set the parameters themselves according to the specific model themselves.
 ### In the example presented in this file, we have three parameter gradients to traverse, which are the parameter for the distribution of two interaction
 ### matrices and the diffusion rate, respectively. And each combination of different values of the three parameters needs 50 repeating simulations. Therefore,
-### the loop below looks extremely complex. Users need to adjust the loop depend on the parameter gradients they need in their own models
+### the loop below looks extremely complex. Users need to adjust the loop depend on the parameter gradients they need in their own models. 
+### Despite that, the logic of codes in this part is easy to understand, and users can freely customize the specific codes. The only problem is that if the naming rule 
+### is broken during customization process, users will need to rewrite the file reading and writing codes in subsequent programmes.
 
-par_df <- expand.grid(seq(0.25,2,by = 0.25),seq(0.25,2,by = 0.25))
+par_df <- expand.grid(seq(0.25,2,by = 0.25),seq(0.25,2,by = 0.25)) ### Generate the sequence of the other two parameter beta1 and beta2 
 
+### Create xlsx workbook and worksheets in batches, Each workbook contains as many worksheets as the length of diffusion rate gradient
 for (iii in 1:length(target_terms)) {
   assign(paste0(target_terms[iii],"_xlsx"),createWorkbook())
   for (jjj in 1:length(mr_gradient)) {
@@ -92,14 +95,19 @@ for (iii in 1:length(target_terms)) {
   }
 }
 
-total_iterations <- length(mr_gradient)*nrow(par_df)*repeat_required
+###  Initialize the progress bar, this is important because it can help you estimate whether you have assigned too many computation tasks.
+total_iterations <- length(mr_gradient)*nrow(par_df)*repeat_required ## Calculate the total amount of simulations
 pb <- progress_bar$new(
   format = "[:bar] :percent, ETA: :eta", 
-  total = total_iterations  # 设置总迭代次数
+  total = total_iterations  
 )
 
-for (j in 1:length(mr_gradient)) {
+### Start the loop
+for (j in 1:length(mr_gradient)) { ### The first loop traverse the diffusion rate gradient
   Da <- mr_gradient[j]
+  
+  ### Define the matrices and dataframes to temporarily store the data. 
+  ### Each matrix will be writen into the corresponding worksheet of the specific workbook.
   Existence_matrix <- matrix(0, nrow = nrow(par_df), ncol = repeat_required)
   row.names(Existence_matrix) <- paste0(expression("\u03B21 = "),par_df[,1],expression(" \u03B22 = "),par_df[,2])
   Osci_matrix <- matrix(0, nrow = nrow(par_df), ncol = repeat_required)
@@ -116,20 +124,27 @@ for (j in 1:length(mr_gradient)) {
   Bij_df <- data.frame()
   r_df <- data.frame()
   N_ini_df <- data.frame()
-  #rawdata_df <- data.frame()
-  for (i in 1:nrow(par_df)) {
+  
+  for (i in 1:nrow(par_df)) { 
+    ### The second loop traverse the other two parameters. 
+    ### Combinations have been made in the previous par_df, and hence we just need to traverse the rows of the dataframe.
     U <- c(par_df[i,1], par_df[i,2])
-    repeat_times <- 0
+
+
+    ### Define the vectors to store temporary data. Each vector will be write into the corresponding matrix defined in the first loop.
     region_existence <- c()
     Osci <- c()
     Biomass <- c()
     Biomass_var <- c()
     Existence_var <- c()
     Osci_var <- c()
-    # start_time <- Sys.time()
-    repeat{
+    
+    ### The third loop simply repeats the simulations under the same set of parameters.
+    repeat_times <- 0
+    repeat{    
       repeat_times <- repeat_times + 1
-      tryCatch({
+      tryCatch({ ### Try the computation, do the simulation again if some occasional errors occur until enough simulations are done.
+        ### Define the parameters and solve the system in the same way as "Laplacian.R" do.
         aij <- round(matrix(rgamma(nn, 1, scale = U[1]), nrow = number_of_polulation),4)
         diag(aij)=0
         bij <- round(matrix(rgamma(nn, 1, scale = U[2]), nrow = number_of_polulation),4)
@@ -142,7 +157,9 @@ for (j in 1:length(mr_gradient)) {
         
         premydata <- array(as.vector(out[,2:ncol(out)]), dim = c(iterations+1, number_of_polulation,N^2))
         mydata <- aperm(premydata,c(2,3,1))
-        
+
+        ### Drag out the features using several indices defined in our article, each spatially explicit community generates one value of each index.
+        ### Then save them in the corresponding vector, and then transfer to the corresponding matrix, and finally to the corresponding worksheet.
         #productivity detector
         my_community <- apply(mydata, 2:3, sum)
         mean_total_biomass <- mean(my_community[,last_iterations])
@@ -155,23 +172,14 @@ for (j in 1:length(mr_gradient)) {
         region_existence <<- c(region_existence, mean(existence))
         Existence_var <<- c(Existence_var, sd(existence))
         
-        # #Diversity detector 1 -- Shannon-Wienner
-        # p <- apply(my_community[,last_iterations], 2, prop.table)
-        # swdi <- apply(p,2,SW)
-        # swdi[is.na(swdi)] <- 0
-        # swdi_mean <- sum(swdi)/length(swdi)
-        # SWDI <<- c(SWDI, swdi_mean)
-        # 
-        # #Diversity detector 2 -- Simpson
-        # simpson <- mean(apply(p, 2, function(x){1-sum(x^2)}))
-        # Simpson <<- c(Simpson, simpson)
-        # 
         #Oscillation detector
         osci <- apply(my_community[, last_iterations], 1, function(x){mean(abs(x-sum(x)/length(x)))})
         Osci <<- c(Osci, sum(osci)/length(osci))
         Osci_var <<- c(Osci_var,sd(osci))
         
         #Parameters archiving
+        ### The amount of raw data of each simulation is too large to archive, 
+        ### hence we only reserve the parameters of each simulation so that we can reach the same data by solving them again.
         adf <- data.frame()
         adf[1,1:(nn+1)] <- c(paste0(expression("\u03B21 = "),
                              par_df[i,1],expression(" \u03B22 = "),par_df[i,2]),
@@ -194,17 +202,6 @@ for (j in 1:length(mr_gradient)) {
                                                       par_df[i,1],expression(" \u03B22 = "),par_df[i,2]),round(N_ini,4))
         N_ini_df <<- rbind(N_ini_df,ndf)
         
-        # rawdf <- data.frame()
-        # mydata <- round(mydata,4)
-        # for (sp_pool in 1:number_of_polulation) {
-        #   for (grids in 1:(N^2)) {
-        #     rawdf <- rbind(rawdf, c(paste0(expression("\u03B21 = "),
-        #                                    par_df[i,1],expression(" \u03B22 = "),par_df[i,2]), 
-        #                             repeat_times, sp_pool, grids, mydata[sp_pool,grids,]))
-        #   }
-        # }
-        # colnames(rawdf) <- colnames(rawdata_df)
-        # rawdata_df <<- rbind(rawdata_df,rawdf)
         pb$tick()
         if(repeat_times >= repeat_required){break}
       },
@@ -212,6 +209,7 @@ for (j in 1:length(mr_gradient)) {
         repeat_times <<- repeat_times - 1
       })
     }
+    ### Saving the data in vectors to matrices
     Biomass_matrix[i,] <- round(Biomass,4)
     Biomass_var_matrix[i,] <- round(Biomass_var, 4)
     Existence_matrix[i,] <- round(region_existence,4)
@@ -222,6 +220,7 @@ for (j in 1:length(mr_gradient)) {
     # end_time <- Sys.time()
     # print(end_time - start_time)
   }
+  ### Write the matrices into worksheets
   writeData(Biomass_xlsx,sheet = get(paste0(target_terms[1],"_mr=",log10(Da))),
             Biomass_matrix,colNames = FALSE, rowNames = TRUE)
   writeData(Existence_xlsx,sheet = get(paste0(target_terms[2],"_mr=",log10(Da))),
@@ -246,6 +245,7 @@ for (j in 1:length(mr_gradient)) {
   #           rawdata_df, colNames = FALSE, rowNames = FALSE)
 }
 
+### Finally save the workbooks and the job is done
 for (i in 1:length(target_terms)) {
   
   saveWorkbook(get(paste0(target_terms[i],"_xlsx")),
