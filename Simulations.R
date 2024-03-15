@@ -57,18 +57,20 @@ Existence_rate_func <- function(x){
   return(sum(Ex)/length(Ex))
 }
 
-
-mr_gradient <- c(10^(-4)) ###
+mr_gradient <- c(10^(-7:-4)) ### Here set the diffusion rate gradient you need
 target_terms <- c("Biomass","Existence","Osci","Biomass_var",
-                  "Existence_var","Osci_var","Aij", "Bij","r","N_ini")#, "raw_data"
-number_of_polulation = 8
+                  "Existence_var","Osci_var","Aij", "Bij","r","N_ini") ### Here set the name of the features you are interested in.
+number_of_polulation = 8 ### Set dimension of your variable
 nn = number_of_polulation^2
+
+### Set the numerical integration iterations and step length
 iterations = 100
+times <- seq(0, iterations, 1)
 last_iterations = (0.75*iterations+1):iterations
 N <- 30
 dx <- 1/N
 dy <- 1/N
-times <- seq(0, iterations, 1)
+
 repeat_required <- 50
 
 par_df <- expand.grid(seq(0.25,2,by = 0.25),seq(0.25,2,by = 0.25))
