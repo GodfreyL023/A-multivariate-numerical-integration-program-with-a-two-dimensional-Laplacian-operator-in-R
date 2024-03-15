@@ -1,0 +1,21 @@
+
+Call:
+lm(formula = formula, data = mldf_log)
+
+Residuals:
+     Min       1Q   Median       3Q      Max 
+-0.04604 -0.03112 -0.01729 -0.00378  1.15917 
+
+Coefficients:
+             Estimate Std. Error t value Pr(>|t|)    
+(Intercept) -0.003787   0.001931  -1.961 0.049858 *  
+beta1       -0.004373   0.001128  -3.876 0.000107 ***
+beta2        0.025463   0.001128  22.570  < 2e-16 ***
+Dr          -0.187798   0.187251  -1.003 0.315911    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 0.09672 on 22396 degrees of freedom
+Multiple R-squared:  0.02292,	Adjusted R-squared:  0.02279 
+F-statistic: 175.1 on 3 and 22396 DF,  p-value: < 2.2e-16
+
