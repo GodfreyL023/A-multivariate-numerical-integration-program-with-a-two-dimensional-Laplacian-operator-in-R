@@ -1,0 +1,62 @@
+isPositiveRealSolution[sol_] := 
+ Module[{positiveRealSolutions},(*筛选出所有变量值均为正实数的解*)
+  positiveRealSolutions = 
+   Select[sol, And @@ (Element[#[[2]], Reals] && #[[2]] > 0 & /@ #) &];
+  (*返回正实数解*)
+  positiveRealSolutions
+  ]; myfuncs = {x (1 - 
+     x + \[Alpha] y - \[Alpha] y^2 + \[Beta] z - \[Beta] z^2), 
+  y (1 - y + \[Beta] x - \[Beta] x^2 + \[Alpha] z - \[Alpha] z^2), 
+  z (1 - z + \[Alpha] x - \[Alpha] x^2 + \[Beta] y - \[Beta] y^2)}; \
+myvars = {x, y, z}; Jstar = 
+ Table[D[myfuncs[[i]], myvars[[j]]], {i, 3}, {j, 3}] /. 
+  isPositiveRealSolution[
+    Solve[{myfuncs[[1]] == 0, myfuncs[[2]] == 0, 
+      myfuncs[[3]] == 0}, {x, y, z}]][[2]]; p1 = 
+ RegionPlot[
+  Max[Re[Eigenvalues[Jstar]]] < 0, {\[Alpha] , 0, 6}, {\[Beta] , 0, 
+   6}, AxesLabel -> {"\[Alpha] ", "\[Beta]"}, 
+  PlotLabel -> "Stability Region", 
+  LabelStyle -> Directive[Black, Bold, Larger], 
+  PlotStyle -> Opacity[0.7, Blue], Mesh -> None, 
+  AxesStyle -> Directive[Gray, Thick], 
+  ImageSize -> 250];(*定义微分方程组*)eqs = {x1'[t] == 
+   x1[t] - x1[t]^2 + \[Alpha]*x1[t]*x2[t] - \[Alpha]*x1[t]*
+     x2[t]^2 + \[Beta]*x1[t]*x3[t] - \[Beta]*x1[t]*x3[t]^2, 
+  x2'[t] == 
+   x2[t] - x2[t]^2 + \[Beta]*x2[t]*x1[t] - \[Beta]*x2[t]*
+     x1[t]^2 + \[Alpha]*x2[t]*x3[t] - \[Alpha]*x2[t]*x3[t]^2, 
+  x3'[t] == 
+   x3[t] - x3[t]^2 + \[Alpha]*x3[t]*x1[t] - \[Alpha]*x3[t]*
+     x1[t]^2 + \[Beta]*x3[t]*x2[t] - \[Beta]*x3[t]*x2[t]^2};
+
+(*初始条件*)
+initialConditions = {x1[0] == x10, x2[0] == x20, x3[0] == x30};
+
+(*参数值*)
+params = {\[Alpha] -> 1.2, \[Beta] -> 0.8, x10 -> 0.1, x20 -> 0.2, 
+  x30 -> 0.3}; trequired = 5000
+
+(*求解微分方程*)
+sol = NDSolve[
+   Flatten[{eqs, initialConditions}] /. params, {x1, x2, x3}, {t, 0, 
+    trequired}, MaxStepSize -> 0.01, MaxSteps -> Infinity];
+
+(*绘制相空间中的轨迹*)
+p2 = ParametricPlot3D[
+  Evaluate[{x1[t], x2[t], x3[t]} /. sol], {t, 0, trequired}, 
+  PlotRange -> All, 
+  AxesLabel -> {"\!\(\*SubscriptBox[\(x\), \(1\)]\)", 
+    "\!\(\*SubscriptBox[\(x\), \(2\)]\)", 
+    "\!\(\*SubscriptBox[\(x\), \(3\)]\)"}, 
+  PlotLabel -> "Phase Space Trajectory", 
+  LabelStyle -> Directive[Black, Bold, Larger], 
+  PlotStyle -> {Thickness[0.01], Blue}, Lighting -> "Neutral", 
+  PlotPoints -> 100, MaxRecursion -> 15, BoxRatios -> {1, 1, 1}, 
+  AxesStyle -> Directive[Gray, Thick], 
+  ImageSize -> 250]; labeledPlot1 = 
+ Labeled[p1, 
+  Style["a", 20, Bold, Black], {{Top, Left}, Bottom}]; labeledPlot2 = 
+ Labeled[p2, 
+  Style["b", 20, Bold, Black], {{Top, Left}, 
+   Bottom}]; GraphicsRow[{labeledPlot1, labeledPlot2}]
